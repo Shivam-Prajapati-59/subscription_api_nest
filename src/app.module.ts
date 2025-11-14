@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { DrizzleModule } from './drizzle/drizzle.module';
 
 import configuration from './config/configuration';
 
@@ -17,6 +18,7 @@ import configuration from './config/configuration';
     AuthModule,
     UserModule,
     SubscriptionModule,
+    DrizzleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
