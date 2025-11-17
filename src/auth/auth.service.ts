@@ -1,26 +1,71 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { eq } from 'drizzle-orm';
+import { users } from 'src/drizzle/schema';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    @Inject('DB_CONNECTION') private readonly db: any,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async signup(createAuthDto: CreateAuthDto) {
+    try {
+      const { name, email, password } = createAuthDto;
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+      // check if user already exists
+      const existingUser = await this.db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+      if (existingUser.length > 0) {
+        throw new ConflictException('User already exists');
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const [newUser] = await this.db
+        .insert(users)
+        .values({
+          name,
+          email,
+          password: hashedPassword,
+        })
+        .returning();
+
+      const payload = {
+        sub: newUser.id,
+        email: newUser.email,
+      };
+
+      const token = await this.jwtService.signAsync(payload);
+
+      return {
+        success: true,
+        message: 'User created successfully',
+        data: {
+          token,
+          user: {
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+          },
+        },
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to create user');
+    }
   }
 }
