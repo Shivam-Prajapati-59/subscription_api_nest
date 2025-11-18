@@ -2,17 +2,21 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
+import { DrizzleModule } from 'src/drizzle/drizzle.module';
+import { ConfigService } from '@nestjs/config';
 
-const jwtConstants = {
-  secret: process.env.JWT_SECRET,
-  expires_in: process.env.JWT_EXPIRES_IN,
-};
 @Module({
   imports: [
-    JwtModule.register({
+    DrizzleModule,
+    JwtModule.registerAsync({
       global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1d' },
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'your-secret-key',
+        signOptions: {
+          expiresIn: '1d',
+        },
+      }),
     }),
   ],
   providers: [AuthService],

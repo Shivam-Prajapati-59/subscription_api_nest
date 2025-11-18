@@ -21,6 +21,7 @@ export class AuthService {
     try {
       const { name, email, password } = createAuthDto;
 
+      console.log('Checking for existing user...');
       // check if user already exists
       const existingUser = await this.db
         .select()
