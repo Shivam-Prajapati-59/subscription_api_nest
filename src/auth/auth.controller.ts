@@ -8,25 +8,26 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
+import { SignUpAuthDto } from './dto/signup-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { SignInAuthDto } from './dto/signin-auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('sign-up')
-  signup(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.signup(createAuthDto);
+  signup(@Body() SignUpAuthDto: SignUpAuthDto) {
+    return this.authService.signup(SignUpAuthDto);
   }
 
-  @Get('sign-in')
-  signin(@Body() createAuthDto: CreateAuthDto) {
-    return 'this is signin';
+  @Post('sign-in')
+  signin(@Body() SignInAuthDto: SignInAuthDto) {
+    return this.authService.signin(SignInAuthDto);
   }
 
   @Post('sign-out')
-  signout(@Body() createAuthDto: CreateAuthDto) {
+  signout(@Body() createAuthDto: SignUpAuthDto) {
     // return this.authService.signout(createAuthDto);
   }
 }
