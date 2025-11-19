@@ -1,29 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { users } from 'src/drizzle/schema';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(@Inject('DB_CONNECTION') private readonly db: any) {}
+
+  async getUsers() {
+    try {
+      const allUsers = await this.db.select().from(users);
+
+      return {
+        success: true,
+        data: allUsers,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to fetch users');
+    }
   }
 
-  findAll() {
-    return { message: 'This action returns all users' };
-  }
+  async getUser(id: string) {
+    try {
+      const user = await this.db.select().from(users).where(eq(users.id, id));
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-  userDetail(id: number) {
-    return `This action returns details of a #${id} user`;
-  }
+      if (user.length === 0) {
+        throw new NotFoundException('User not found');
+      }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+      return {
+        success: true,
+        data: user[0],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+      throw new InternalServerErrorException('Failed to fetch user by ID');
+    }
   }
 }
