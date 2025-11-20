@@ -10,6 +10,7 @@ import { MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 
 import configuration from './config/configuration';
 import { AuthMiddleware } from './middleware/auth/auth.middleware';
+import { ArcjetMiddleware } from './middleware/arcjet/arcjet.middleware';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthMiddleware } from './middleware/auth/auth.middleware';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ArcjetMiddleware).forRoutes('*');
     consumer
       .apply(AuthMiddleware)
       .exclude(

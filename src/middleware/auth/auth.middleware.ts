@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -27,12 +23,18 @@ export class AuthMiddleware implements NestMiddleware {
       }
 
       if (!token) {
-        throw new UnauthorizedException('Not authorized, no token provided');
+        return res.status(401).json({
+          success: false,
+          message: 'Not authorized, no token provided',
+        });
       }
 
       // Verify token
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret:
+          this.configService.get<string>('jwtSecret') ||
+          process.env.JWT_SECRET ||
+          'your-secret-key',
       });
 
       // Attach user info to request
@@ -40,10 +42,10 @@ export class AuthMiddleware implements NestMiddleware {
 
       next();
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Not authorized, invalid token');
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, invalid token',
+      });
     }
   }
 }

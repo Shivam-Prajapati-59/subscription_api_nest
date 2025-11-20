@@ -20,6 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@arcjet/nest": "1.0.0-beta.15",
+    "@arcjet/node": "1.0.0-beta.15",
     "@neondatabase/serverless": "^1.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",

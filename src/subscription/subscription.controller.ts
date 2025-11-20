@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Put,
+  Request,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -17,47 +17,44 @@ export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
   @Get()
-  getAllSubsciptions() {
-    return this.subscriptionService.getAllSubsciptions();
+  getAllSubscriptions() {
+    return this.subscriptionService.getAllSubscriptions();
+  }
+
+  @Get('user/me')
+  getMySubscriptions(@Request() req) {
+    const userId = req['user'].sub;
+    return this.subscriptionService.getSubscriptions(userId);
   }
 
   @Get(':id')
-  getall(@Param('id') id: string) {
-    return this.subscriptionService.getSubscriptions(+id);
+  getSubscriptionById(@Param('id') id: string) {
+    return this.subscriptionService.getSubscriptionById(id);
   }
+
   @Post()
-  create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    return this.subscriptionService.create(createSubscriptionDto);
+  create(@Body() createSubscriptionDto: CreateSubscriptionDto, @Request() req) {
+    const userId = req['user'].sub;
+    return this.subscriptionService.create(createSubscriptionDto, userId);
   }
 
   @Put(':id')
-  updateSusbscription(
+  updateSubscription(
     @Param('id') id: string,
     @Body() updateSubscriptionDto: UpdateSubscriptionDto,
+    @Request() req,
   ) {
-    return this.subscriptionService.updateSusbscription(
-      +id,
+    const userId = req['user'].sub;
+    return this.subscriptionService.updateSubscription(
+      id,
       updateSubscriptionDto,
+      userId,
     );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subscriptionService.remove(+id);
-  }
-
-  @Get('/user/:id')
-  getSubscriptionsByUserId(@Param('id') id: string) {
-    // return this.subscriptionService.getSubscriptionsByUserId(+id);
-  }
-
-  @Put('/:id/cancel')
-  cancelSubscription(@Param('id') id: string) {
-    // return this.subscriptionService.cancelSubscription(+id);
-  }
-
-  @Get('/upcoming-renewals')
-  getUpcomingRenewals() {
-    // return this.subscriptionService.getUpcomingRenewals();
+  remove(@Param('id') id: string, @Request() req) {
+    const userId = req['user'].sub;
+    return this.subscriptionService.remove(id, userId);
   }
 }
